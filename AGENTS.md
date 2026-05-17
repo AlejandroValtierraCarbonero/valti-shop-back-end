@@ -1,30 +1,43 @@
 # valti-shop-back-end
 
-C# .NET Core REST API for shop management. DDD with 4 layers.
+C# .NET 10 REST API for shop management. DDD with 4 layers.
 
 ## Stack
 
-- .NET 10 (`net10.0`) — needs latest SDK
-- ASP.NET Core (Presentation), EF Core + SQL Server (Persistence)
-- Swagger / Swashbuckle, temporal tables
+- ASP.NET Core, EF Core + SQL Server, Swagger/Swashbuckle
+- Temporal tables (`licenses` schema, `_history` suffix)
 
 ## Architecture
 
 ```
-Presentation (Web API) → Application, Persistence
+Presentation → Application, Persistence
 Application → Domain
 Persistence → Application, Domain
 Domain → (none)
 ```
 
-- **Domain** entities (`ValtiShop.Domain.Entities/`) are rich: private setters, parameterized constructors, invariant enforcement.
-- **Persistence ScaffoldModels** (`ValtiShop.Persistence.ScaffoldModels/`) are EF Core POCOs with public setters — separate from domain entities. The DbContext maps these scaffold models.
-- **Application** layer is currently **empty** (no C# files). New use cases go here.
-- All tables use **SQL Server temporal tables** (`licenses` schema, `_history` suffix).
+- **Domain** (`ValtiShop.Domain.Entities/`): rich entities — private setters, parameterized constructors, invariant enforcement.
+- **ScaffoldModels** (`ValtiShop.Persistence.ScaffoldModels/`): EF Core POCOs with public setters, separate from domain entities. `ValtiShopDbContext` maps scaffold models, not domain entities.
+- **Application** (`ValtiShop.Application/`): currently thin — `Interfaces/` and `Dtos/` only, no use-case services yet.
+- `ValtiShopDbContext` is `partial`; new entity config goes in `OnModelCreatingPartial`.
+- Project references in `.csproj` files match the dependency arrows above exactly.
+
+## Adding new entities
+
+1. Add rich domain entity in `ValtiShop.Domain.Entities/`
+2. Add EF Core scaffold POCO in `ValtiShop.Persistence.ScaffoldModels/`
+3. Add `DbSet<T>` + Fluent config in `ValtiShopDbContext` (via `OnModelCreatingPartial`)
+4. Create migration from Persistence: `dotnet ef migrations add <name> --project ValtiShop.Persistence`
+
+## Conventions
+
+- File-scoped namespaces (`namespace X.Y;`)
+- Service implementations are `sealed`; DTOs use `sealed record`
+- Interfaces named `I*Service` in `ValtiShop.Application.Interfaces/`
 
 ## Setup
 
-- **No connection string committed.** Create `ValtiShop.Presentation/appsettings.Development.json` with:
+- **No connection string committed.** Create `ValtiShop.Presentation/appsettings.Development.json`:
   ```json
   {
     "ConnectionStrings": {
@@ -32,18 +45,18 @@ Domain → (none)
     }
   }
   ```
-- No `global.json`, no `Directory.Build.props`, no code analysis config.
-- EF Core migrations not yet present — add via Persistence project.
+- No `global.json`, no `Directory.Build.props`.
+- EF Core migrations not yet present — create via Persistence project.
+- `UserSecretsId` configured in Presentation project (`dotnet user-secrets` available).
 
 ## Commands
 
-```powershell
+```
 dotnet build
 dotnet run --project ValtiShop.Presentation  # http://localhost:5110
 ```
 
 ## State
 
-- No test projects.
-- No CI/CD workflows.
-- `ValtiShop.Presentation.http` still has stale `weatherforecast` endpoint from template.
+- No test projects, no CI/CD workflows.
+- `ValtiShop.Presentation.http` has stale `weatherforecast` endpoint from template.
