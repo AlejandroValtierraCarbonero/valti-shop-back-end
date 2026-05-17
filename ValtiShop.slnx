@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ValtiShop.Application/ValtiShop.Application.csproj" />
+  <Project Path="ValtiShop.Domain/ValtiShop.Domain.csproj" />
+  <Project Path="ValtiShop.Persistence/ValtiShop.Persistence.csproj" />
+  <Project Path="ValtiShop.Presentation/ValtiShop.Presentation.csproj" />
+</Solution>

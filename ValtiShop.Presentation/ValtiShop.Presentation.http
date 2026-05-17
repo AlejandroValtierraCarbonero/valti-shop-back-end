@@ -1,0 +1,6 @@
+@ValtiShop.Presentation_HostAddress = http://localhost:5110
+
+GET {{ValtiShop.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
